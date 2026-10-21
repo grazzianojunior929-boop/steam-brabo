@@ -216,6 +216,10 @@ button,input{font:inherit;color:inherit}
 .avaliacao{border:1px dashed var(--linha);border-radius:16px;padding:1.1rem;background:var(--carbono-2);display:flex;flex-direction:column;gap:.5rem;min-height:170px}
 .estrelas{color:var(--ouro);letter-spacing:.15em}
 .avaliacao p{margin:0;color:var(--texto-suave);font-size:.92rem}
+/* Foto de perfil (avatar) de cada avaliação */
+.aval-topo{display:flex;align-items:center;gap:.7rem}
+.avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--ouro);flex-shrink:0;background:var(--carbono)}
+.aval-topo strong{display:block;font-size:.95rem}
 
 /* ===== 8. FAQ ===== */
 .faq details{border-bottom:1px solid var(--linha)}
@@ -291,7 +295,7 @@ footer{margin-top:4rem;border-top:1px solid var(--linha);background:linear-gradi
   <symbol id="i-app" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></g></symbol>
 </svg>
 
-<div class="faixa" role="note"><span>Steam Brabo · De player pra player · Brabo Max de R$ 120 por R$ 60 · Brabo Insano de R$ 180 por R$ 100 · Preço de lançamento, vagas limitadas · Chama a gente no WhatsApp!</span></div>
+<div class="faixa" role="note"><span>Steam Brabo · De player pra player · Brabo Max de R$ 120 por R$ 60 · Brabo Insano de R$ 220 por R$ 120 · Preço de lançamento, vagas limitadas · Chama a gente no WhatsApp!</span></div>
 
 <header class="topo">
   <div class="container">
@@ -374,10 +378,10 @@ footer{margin-top:4rem;border-top:1px solid var(--linha);background:linear-gradi
   <section class="fileira revelar" aria-labelledby="t-aval">
     <div class="fileira-topo"><div><h2 id="t-aval">Avaliações</h2><p class="desc">O que a galera do grupo fala da gente.</p></div></div>
     <div class="trilho">
-      <div class="avaliacao"><span class="estrelas">★★★★★</span><p>Espaço para a avaliação real de um cliente. Substitua por prints ou depoimentos verdadeiros.</p></div>
-      <div class="avaliacao"><span class="estrelas">★★★★★</span><p>Espaço para a avaliação real de um cliente.</p></div>
-      <div class="avaliacao"><span class="estrelas">★★★★★</span><p>Espaço para a avaliação real de um cliente.</p></div>
-      <div class="avaliacao"><span class="estrelas">★★★★★</span><p>Espaço para a avaliação real de um cliente.</p></div>
+      <div class="avaliacao"><div class="aval-topo"><img class="avatar" src="assets/avatares/avatar-akira.svg" alt="Foto de perfil do cliente" width="52" height="52" loading="lazy"><div><strong>Nome do cliente</strong><span class="estrelas">★★★★★</span></div></div><p>Espaço para a avaliação real de um cliente. Substitua por prints ou depoimentos verdadeiros.</p></div>
+      <div class="avaliacao"><div class="aval-topo"><img class="avatar" src="assets/avatares/avatar-hana.svg" alt="Foto de perfil do cliente" width="52" height="52" loading="lazy"><div><strong>Nome do cliente</strong><span class="estrelas">★★★★★</span></div></div><p>Espaço para a avaliação real de um cliente.</p></div>
+      <div class="avaliacao"><div class="aval-topo"><img class="avatar" src="assets/avatares/avatar-ryu.svg" alt="Foto de perfil do cliente" width="52" height="52" loading="lazy"><div><strong>Nome do cliente</strong><span class="estrelas">★★★★★</span></div></div><p>Espaço para a avaliação real de um cliente.</p></div>
+      <div class="avaliacao"><div class="aval-topo"><img class="avatar" src="assets/avatares/avatar-sakura.svg" alt="Foto de perfil do cliente" width="52" height="52" loading="lazy"><div><strong>Nome do cliente</strong><span class="estrelas">★★★★★</span></div></div><p>Espaço para a avaliação real de um cliente.</p></div>
     </div>
   </section>
 
@@ -474,10 +478,10 @@ const CONFIG = {
           msg: "Olá, Steam Brabo! Quero o plano Brabo Max (de R$ 120 por R$ 60)." },
         { nome: "Brabo Insano", banner: "assets/plano-brabo-insano.png", selo: "MAIS COMPLETO", seloVerde: true,
           cat: "44k de jogos + otimização do seu PC para o máximo desempenho",
-          precoDe: "R$ 180", precoPor: "R$ 100",
+          precoDe: "R$ 220", precoPor: "R$ 120",
           escassez: "Últimas vagas com esse preço", vagas: 89,
           tipo: "zap", botao: "Quero o Brabo Insano",
-          msg: "Olá, Steam Brabo! Quero o plano Brabo Insano (de R$ 180 por R$ 100)." }
+          msg: "Olá, Steam Brabo! Quero o plano Brabo Insano (de R$ 220 por R$ 120)." }
       ]
     }
   ]
