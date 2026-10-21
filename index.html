@@ -220,6 +220,25 @@ button,input{font:inherit;color:inherit}
 .aval-topo{display:flex;align-items:center;gap:.7rem}
 .avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--ouro);flex-shrink:0;background:var(--carbono)}
 .aval-topo strong{display:block;font-size:.95rem}
+/* Formulário "Deixe sua avaliação" */
+.aval-form{margin-top:1.5rem;border:1px solid var(--linha);border-radius:20px;padding:1.4rem;background:linear-gradient(180deg,var(--carbono-2),var(--carbono));display:grid;gap:.9rem;max-width:640px}
+.aval-form h3{margin:0;font-family:var(--f-titulo);font-size:1.25rem}
+.aval-form label{display:grid;gap:.35rem;font-weight:600;font-size:.92rem}
+.aval-form input[type=text],.aval-form textarea{width:100%;box-sizing:border-box;padding:.75rem .9rem;border-radius:12px;border:1px solid var(--linha);background:var(--carbono-3);color:var(--texto);font:inherit}
+.aval-form textarea{min-height:110px;resize:vertical}
+.aval-form input:focus,.aval-form textarea:focus{outline:2px solid var(--verde);outline-offset:1px}
+.escolher-estrelas{display:flex;gap:.25rem;border:0;padding:0;margin:0}
+.escolher-estrelas legend{font-weight:600;font-size:.92rem;margin-bottom:.35rem}
+.escolher-estrelas button{background:none;border:0;padding:.1rem;font-size:2rem;line-height:1;color:#3a443a;cursor:pointer;transition:transform .15s,color .15s}
+.escolher-estrelas button.on{color:var(--ouro)}
+.escolher-estrelas button:hover{transform:scale(1.15)}
+.escolher-estrelas button:focus-visible{outline:2px solid var(--verde);border-radius:6px}
+.aval-form .pote{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.aval-status{margin:0;font-size:.92rem;min-height:1.2em}
+.aval-status.ok{color:var(--verde)}.aval-status.erro{color:#ff6b6b}
+.aval-form button[type=submit]{justify-self:start}
+.aval-form button[disabled]{opacity:.6;cursor:wait}
+.avatar.letra{display:grid;place-items:center;font-family:var(--f-titulo);font-size:1.3rem;color:#2a1800;background:linear-gradient(135deg,var(--ouro-claro),var(--ouro))}
 
 /* ===== 8. FAQ ===== */
 .faq details{border-bottom:1px solid var(--linha)}
@@ -383,6 +402,30 @@ footer{margin-top:4rem;border-top:1px solid var(--linha);background:linear-gradi
       <div class="avaliacao"><div class="aval-topo"><img class="avatar" src="assets/avatares/perfil-3.jpg" alt="Foto de perfil de Nyxion" width="52" height="52" loading="lazy"><div><strong>Nyxion</strong><span class="estrelas">★★★★★</span></div></div><p>Recomendooo demaissssss, né que funciona mesmo?!! Por um momento eu fiquei com medo, mas eles me passaram uma confiança absurda, steambrabo é zikaaaa!</p></div>
       <div class="avaliacao"><div class="aval-topo"><img class="avatar" src="assets/avatares/perfil-4.jpg" alt="Foto de perfil de Lumina" width="52" height="52" loading="lazy"><div><strong>Lumina</strong><span class="estrelas">★★★★★</span></div></div><p>Nossa gente, eu realmente gostei muito, tudo que eles prometem eles cumprem, ajudaram demais, nunca mais quero saber de outro serviço, na minha vida agora é só a verdinha, vcs são incríveis Brabo!!</p></div>
     </div>
+
+    <!-- FORMULÁRIO: clientes reais deixam a avaliação aqui.
+         Ela vai pra planilha do Google e só aparece no site depois que você escrever "sim" na coluna Aprovado. -->
+    <form class="aval-form" id="aval-form" novalidate>
+      <h3>Deixe sua avaliação</h3>
+      <label>Seu nome ou nick
+        <input type="text" name="nome" maxlength="40" required autocomplete="nickname">
+      </label>
+      <fieldset class="escolher-estrelas" id="aval-estrelas">
+        <legend>Sua nota</legend>
+        <button type="button" data-n="1" aria-label="1 estrela">★</button>
+        <button type="button" data-n="2" aria-label="2 estrelas">★</button>
+        <button type="button" data-n="3" aria-label="3 estrelas">★</button>
+        <button type="button" data-n="4" aria-label="4 estrelas">★</button>
+        <button type="button" data-n="5" aria-label="5 estrelas">★</button>
+      </fieldset>
+      <label>Sua avaliação
+        <textarea name="texto" maxlength="500" required placeholder="Conta pra galera como foi sua experiência com a Steam Brabo"></textarea>
+      </label>
+      <!-- Campo "pote de mel": escondido das pessoas. Se vier preenchido, foi um robô. -->
+      <div class="pote" aria-hidden="true"><input type="text" name="site" tabindex="-1" autocomplete="off"></div>
+      <button type="submit" class="btn-zap">Enviar avaliação</button>
+      <p class="aval-status" id="aval-status" role="status"></p>
+    </form>
   </section>
 
   <!-- FAQ -->
@@ -444,6 +487,8 @@ const ARTE_TESTE = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEB
 
 const CONFIG = {
   whatsapp: "5563992427507", // 55 + DDD + número
+  // Endereço do "App da Web" do Google Apps Script que guarda as avaliações na planilha
+  avaliacoesUrl: "https://script.google.com/macros/s/AKfycbzhk8LUip1CC3RtcSbPzPuYcsoGEuPWw_BUVV7SRfIZv9q7_qXSQ_VCAMobJkPiLuMb/exec",
 
   // Cada fileira vira uma vitrine de cards. tipo "link" abre o site oficial,
   // tipo "zap" abre o WhatsApp com a mensagem.
@@ -687,6 +732,63 @@ const observador = new IntersectionObserver(function (itens) {
 document.querySelectorAll(".revelar").forEach(function (el) { observador.observe(el); });
 
 ligarBotoesZap(document);
+/* =========================================================
+   AVALIAÇÕES DE CLIENTES REAIS (planilha do Google)
+   - Envia: nome + estrelas + texto -> planilha (coluna Aprovado vazia)
+   - Mostra: só as que você marcou "sim" na coluna Aprovado
+   ========================================================= */
+(function () {
+  const url = CONFIG.avaliacoesUrl;
+  const form = document.getElementById("aval-form");
+  const status = document.getElementById("aval-status");
+  const botoesEstrela = form.querySelectorAll("#aval-estrelas button");
+  let nota = 0;
+
+  // Pinta as estrelas até a nota escolhida
+  function pintar(n) { botoesEstrela.forEach(function (b) { b.classList.toggle("on", Number(b.dataset.n) <= n); b.setAttribute("aria-pressed", Number(b.dataset.n) === nota); }); }
+  botoesEstrela.forEach(function (b) {
+    b.addEventListener("click", function () { nota = Number(b.dataset.n); pintar(nota); });
+    b.addEventListener("mouseenter", function () { pintar(Number(b.dataset.n)); });
+    b.addEventListener("mouseleave", function () { pintar(nota); });
+  });
+
+  function aviso(texto, tipo) { status.textContent = texto; status.className = "aval-status " + (tipo || ""); }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const dados = new FormData(form);
+    if (!String(dados.get("nome")).trim()) return aviso("Escreve seu nome ou nick.", "erro");
+    if (!nota) return aviso("Escolhe de 1 a 5 estrelas.", "erro");
+    if (String(dados.get("texto")).trim().length < 5) return aviso("Escreve um pouquinho sobre sua experiência.", "erro");
+    if (!url || url.indexOf("http") !== 0) return aviso("As avaliações ainda não estão ativadas.", "erro");
+    dados.append("estrelas", nota);
+    const botao = form.querySelector("[type=submit]");
+    botao.disabled = true; aviso("Enviando…");
+    // "no-cors": o Google não deixa ler a resposta, mas a avaliação chega na planilha
+    fetch(url, { method: "POST", mode: "no-cors", body: new URLSearchParams(dados) })
+      .then(function () {
+        form.reset(); nota = 0; pintar(0);
+        aviso("Valeu! Sua avaliação foi enviada e aparece aqui assim que for aprovada.", "ok");
+      })
+      .catch(function () { aviso("Não deu pra enviar agora. Tenta de novo daqui a pouco.", "erro"); })
+      .finally(function () { botao.disabled = false; });
+  });
+
+  // Carrega as avaliações aprovadas e coloca antes das que já estão no site
+  if (!url || url.indexOf("http") !== 0) return;
+  fetch(url).then(function (r) { return r.json(); }).then(function (lista) {
+    const trilho = document.querySelector("[aria-labelledby=t-aval] .trilho");
+    lista.slice(0, 30).reverse().forEach(function (a) {
+      const n = Math.max(1, Math.min(5, Math.round(a.estrelas) || 5));
+      const card = document.createElement("div");
+      card.className = "avaliacao";
+      card.innerHTML = '<div class="aval-topo"><span class="avatar letra" aria-hidden="true">' + esc(String(a.nome).charAt(0).toUpperCase()) + "</span>" +
+        "<div><strong>" + esc(a.nome) + '</strong><span class="estrelas" aria-label="' + n + ' de 5 estrelas">' + "★".repeat(n) + "☆".repeat(5 - n) + "</span></div></div>" +
+        "<p>" + esc(a.texto) + "</p>";
+      trilho.insertBefore(card, trilho.firstChild);
+    });
+  }).catch(function () { /* se a planilha falhar, o site continua normal */ });
+})();
 </script>
 </body>
 </html>
