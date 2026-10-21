@@ -238,6 +238,14 @@ button,input{font:inherit;color:inherit}
 .aval-status.ok{color:var(--verde)}.aval-status.erro{color:#ff6b6b}
 .aval-form button[type=submit]{justify-self:start}
 .aval-form button[disabled]{opacity:.6;cursor:wait}
+.grade-aval{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1rem}
+.grade-aval .avaliacao.escondida{display:none}
+/* "hidden" precisa ganhar do display dos botões e avatares */
+.aval-form [hidden],.ver-mais[hidden]{display:none!important}
+.ver-mais{margin-top:1rem}
+.foto-campo{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.foto-btn{padding:.6rem 1rem;font-size:.85rem;cursor:pointer}
+.foto-tirar{background:none;border:0;color:var(--texto-suave);text-decoration:underline;cursor:pointer;font:inherit;font-size:.85rem}
 .avatar.letra{display:grid;place-items:center;font-family:var(--f-titulo);font-size:1.3rem;color:#2a1800;background:linear-gradient(135deg,var(--ouro-claro),var(--ouro))}
 
 /* ===== 8. FAQ ===== */
@@ -396,20 +404,29 @@ footer{margin-top:4rem;border-top:1px solid var(--linha);background:linear-gradi
   <!-- AVALIAÇÕES -->
   <section class="fileira revelar" aria-labelledby="t-aval">
     <div class="fileira-topo"><div><h2 id="t-aval">Avaliações</h2><p class="desc">O que a galera do grupo fala da gente.</p></div></div>
-    <div class="trilho">
+    <div class="grade-aval" id="lista-aval">
       <div class="avaliacao"><div class="aval-topo"><img class="avatar" src="assets/avatares/perfil-1.jpg" alt="Foto de perfil de Kaelix" width="52" height="52" loading="lazy"><div><strong>Kaelix</strong><span class="estrelas">★★★★★</span></div></div><p>Eu gostei muito do serviço, foram bem práticos e 100% confiáveis, tem todos os jogos que eu sonhava em ter. Obrigado galera, vcs são Brabos!</p></div>
       <div class="avaliacao"><div class="aval-topo"><img class="avatar" src="assets/avatares/perfil-2.jpg" alt="Foto de perfil de Vortex" width="52" height="52" loading="lazy"><div><strong>Vortex</strong><span class="estrelas">★★★★★</span></div></div><p>Gostei muito da forma que vcs trabalham, funciona mesmo, agora eu posso jogar meu jogo favorito que nunca imaginei que iria ter, super grato!</p></div>
       <div class="avaliacao"><div class="aval-topo"><img class="avatar" src="assets/avatares/perfil-3.jpg" alt="Foto de perfil de Nyxion" width="52" height="52" loading="lazy"><div><strong>Nyxion</strong><span class="estrelas">★★★★★</span></div></div><p>Recomendooo demaissssss, né que funciona mesmo?!! Por um momento eu fiquei com medo, mas eles me passaram uma confiança absurda, steambrabo é zikaaaa!</p></div>
       <div class="avaliacao"><div class="aval-topo"><img class="avatar" src="assets/avatares/perfil-4.jpg" alt="Foto de perfil de Lumina" width="52" height="52" loading="lazy"><div><strong>Lumina</strong><span class="estrelas">★★★★★</span></div></div><p>Nossa gente, eu realmente gostei muito, tudo que eles prometem eles cumprem, ajudaram demais, nunca mais quero saber de outro serviço, na minha vida agora é só a verdinha, vcs são incríveis Brabo!!</p></div>
     </div>
+    <button type="button" class="btn-sec ver-mais" id="ver-mais-aval" hidden>Ver mais avaliações</button>
 
     <!-- FORMULÁRIO: clientes reais deixam a avaliação aqui.
-         Ela vai pra planilha do Google e só aparece no site depois que você escrever "sim" na coluna Aprovado. -->
+         Ela vai pra planilha do Google e já aparece no site. Pra esconder uma, escreva "não" na coluna Aprovado. -->
     <form class="aval-form" id="aval-form" novalidate>
       <h3>Deixe sua avaliação</h3>
       <label>Seu nome ou nick
         <input type="text" name="nome" maxlength="40" required autocomplete="nickname">
       </label>
+      <div class="foto-campo">
+        <img class="avatar" id="aval-preview" src="" alt="" hidden>
+        <span class="avatar letra" id="aval-letra" aria-hidden="true">?</span>
+        <label class="btn-sec foto-btn">Colocar foto de perfil (opcional)
+          <input type="file" id="aval-foto" accept="image/*" hidden>
+        </label>
+        <button type="button" class="foto-tirar" id="aval-foto-tirar" hidden>Remover foto</button>
+      </div>
       <fieldset class="escolher-estrelas" id="aval-estrelas">
         <legend>Sua nota</legend>
         <button type="button" data-n="1" aria-label="1 estrela">★</button>
@@ -734,17 +751,46 @@ document.querySelectorAll(".revelar").forEach(function (el) { observador.observe
 ligarBotoesZap(document);
 /* =========================================================
    AVALIAÇÕES DE CLIENTES REAIS (planilha do Google)
-   - Envia: nome + estrelas + texto -> planilha (coluna Aprovado vazia)
-   - Mostra: só as que você marcou "sim" na coluna Aprovado
+   - Envia: nome + estrelas + texto + foto (opcional) -> planilha
+   - Mostra: todas, menos as que você marcar "não" na coluna Aprovado
    ========================================================= */
 (function () {
   const url = CONFIG.avaliacoesUrl;
+  const POR_PAGINA = 8; // quantas avaliações aparecem antes do "Ver mais"
   const form = document.getElementById("aval-form");
   const status = document.getElementById("aval-status");
+  const lista = document.getElementById("lista-aval");
+  const verMais = document.getElementById("ver-mais-aval");
   const botoesEstrela = form.querySelectorAll("#aval-estrelas button");
-  let nota = 0;
+  const campoFoto = document.getElementById("aval-foto");
+  const preview = document.getElementById("aval-preview");
+  const letra = document.getElementById("aval-letra");
+  const tirarFoto = document.getElementById("aval-foto-tirar");
+  let nota = 0, foto = "", mostrando = POR_PAGINA;
 
-  // Pinta as estrelas até a nota escolhida
+  /* ---------- "Ver mais": esconde o que passar do limite ---------- */
+  function atualizarLista() {
+    const cards = lista.querySelectorAll(".avaliacao");
+    cards.forEach(function (c, i) { c.classList.toggle("escondida", i >= mostrando); });
+    verMais.hidden = cards.length <= mostrando;
+  }
+  verMais.addEventListener("click", function () { mostrando += POR_PAGINA; atualizarLista(); });
+
+  /* ---------- Cria o card de uma avaliação ---------- */
+  function criarCardAval(a) {
+    const n = Math.max(1, Math.min(5, Math.round(a.estrelas) || 5));
+    const temFoto = /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(a.foto || "");
+    const card = document.createElement("div");
+    card.className = "avaliacao";
+    card.innerHTML = '<div class="aval-topo">' +
+      (temFoto ? '<img class="avatar" src="' + a.foto + '" alt="Foto de perfil de ' + esc(a.nome) + '" width="52" height="52">'
+               : '<span class="avatar letra" aria-hidden="true">' + esc(String(a.nome).charAt(0).toUpperCase()) + "</span>") +
+      "<div><strong>" + esc(a.nome) + '</strong><span class="estrelas" aria-label="' + n + ' de 5 estrelas">' + "★".repeat(n) + "☆".repeat(5 - n) + "</span></div></div>" +
+      "<p>" + esc(a.texto) + "</p>";
+    return card;
+  }
+
+  /* ---------- Estrelas do formulário ---------- */
   function pintar(n) { botoesEstrela.forEach(function (b) { b.classList.toggle("on", Number(b.dataset.n) <= n); b.setAttribute("aria-pressed", Number(b.dataset.n) === nota); }); }
   botoesEstrela.forEach(function (b) {
     b.addEventListener("click", function () { nota = Number(b.dataset.n); pintar(nota); });
@@ -752,41 +798,69 @@ ligarBotoesZap(document);
     b.addEventListener("mouseleave", function () { pintar(nota); });
   });
 
+  /* ---------- Foto de perfil: recorta quadrado e diminui pra 96x96 ---------- */
+  // Assim a foto fica leve (uns 5 KB) e cabe numa célula da planilha.
+  function mostrarFoto() {
+    preview.hidden = !foto; letra.hidden = !!foto; tirarFoto.hidden = !foto;
+    if (foto) preview.src = foto;
+  }
+  form.querySelector("input[name=nome]").addEventListener("input", function (e) {
+    letra.textContent = (e.target.value.trim().charAt(0) || "?").toUpperCase();
+  });
+  campoFoto.addEventListener("change", function () {
+    const arquivo = campoFoto.files[0];
+    if (!arquivo) return;
+    if (!/^image\//.test(arquivo.type)) return aviso("Escolhe um arquivo de imagem.", "erro");
+    const img = new Image();
+    img.onload = function () {
+      const lado = Math.min(img.width, img.height);
+      const tela = document.createElement("canvas");
+      tela.width = tela.height = 96;
+      tela.getContext("2d").drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, 96, 96);
+      foto = tela.toDataURL("image/jpeg", 0.82);
+      URL.revokeObjectURL(img.src);
+      mostrarFoto(); aviso("");
+    };
+    img.onerror = function () { aviso("Não deu pra abrir essa imagem. Tenta outra.", "erro"); };
+    img.src = URL.createObjectURL(arquivo);
+  });
+  tirarFoto.addEventListener("click", function () { foto = ""; campoFoto.value = ""; mostrarFoto(); });
+
   function aviso(texto, tipo) { status.textContent = texto; status.className = "aval-status " + (tipo || ""); }
 
+  /* ---------- Enviar ---------- */
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     const dados = new FormData(form);
-    if (!String(dados.get("nome")).trim()) return aviso("Escreve seu nome ou nick.", "erro");
+    const nova = { nome: String(dados.get("nome")).trim(), texto: String(dados.get("texto")).trim(), estrelas: nota, foto: foto };
+    if (!nova.nome) return aviso("Escreve seu nome ou nick.", "erro");
     if (!nota) return aviso("Escolhe de 1 a 5 estrelas.", "erro");
-    if (String(dados.get("texto")).trim().length < 5) return aviso("Escreve um pouquinho sobre sua experiência.", "erro");
+    if (nova.texto.length < 5) return aviso("Escreve um pouquinho sobre sua experiência.", "erro");
     if (!url || url.indexOf("http") !== 0) return aviso("As avaliações ainda não estão ativadas.", "erro");
-    dados.append("estrelas", nota);
+    const envio = new URLSearchParams();
+    envio.append("nome", nova.nome); envio.append("texto", nova.texto);
+    envio.append("estrelas", nota); envio.append("foto", foto); envio.append("site", dados.get("site") || "");
     const botao = form.querySelector("[type=submit]");
     botao.disabled = true; aviso("Enviando…");
     // "no-cors": o Google não deixa ler a resposta, mas a avaliação chega na planilha
-    fetch(url, { method: "POST", mode: "no-cors", body: new URLSearchParams(dados) })
+    fetch(url, { method: "POST", mode: "no-cors", body: envio })
       .then(function () {
-        form.reset(); nota = 0; pintar(0);
-        aviso("Valeu! Sua avaliação foi enviada e aparece aqui assim que for aprovada.", "ok");
+        lista.insertBefore(criarCardAval(nova), lista.firstChild); // já mostra pra quem enviou
+        atualizarLista();
+        form.reset(); nota = 0; pintar(0); foto = ""; mostrarFoto(); letra.textContent = "?";
+        aviso("Valeu! Sua avaliação foi publicada.", "ok");
+        lista.scrollIntoView({ behavior: "smooth", block: "start" });
       })
       .catch(function () { aviso("Não deu pra enviar agora. Tenta de novo daqui a pouco.", "erro"); })
       .finally(function () { botao.disabled = false; });
   });
 
-  // Carrega as avaliações aprovadas e coloca antes das que já estão no site
+  /* ---------- Carrega as avaliações salvas (mais novas primeiro) ---------- */
+  atualizarLista();
   if (!url || url.indexOf("http") !== 0) return;
-  fetch(url).then(function (r) { return r.json(); }).then(function (lista) {
-    const trilho = document.querySelector("[aria-labelledby=t-aval] .trilho");
-    lista.slice(0, 30).reverse().forEach(function (a) {
-      const n = Math.max(1, Math.min(5, Math.round(a.estrelas) || 5));
-      const card = document.createElement("div");
-      card.className = "avaliacao";
-      card.innerHTML = '<div class="aval-topo"><span class="avatar letra" aria-hidden="true">' + esc(String(a.nome).charAt(0).toUpperCase()) + "</span>" +
-        "<div><strong>" + esc(a.nome) + '</strong><span class="estrelas" aria-label="' + n + ' de 5 estrelas">' + "★".repeat(n) + "☆".repeat(5 - n) + "</span></div></div>" +
-        "<p>" + esc(a.texto) + "</p>";
-      trilho.insertBefore(card, trilho.firstChild);
-    });
+  fetch(url).then(function (r) { return r.json(); }).then(function (salvas) {
+    salvas.slice(0, 200).reverse().forEach(function (a) { lista.insertBefore(criarCardAval(a), lista.firstChild); });
+    atualizarLista();
   }).catch(function () { /* se a planilha falhar, o site continua normal */ });
 })();
 </script>
