@@ -4,6 +4,19 @@
 
 Site da **Steam Brabo**: página única, responsiva (feita primeiro pro celular), com os planos **Brabo Max**, **Brabo Premium** e **Brabo Ultra Plus+** e todos os botões levando direto pro WhatsApp com mensagem pronta.
 
+**Site no ar:** https://grazzianojunior929-boop.github.io/steam-brabo/
+
+## Destaques técnicos
+
+- **HTML, CSS e JavaScript puros**, sem framework nem etapa de build: o site inteiro é um `index.html`, pensado primeiro para o celular.
+- **Avaliações de clientes com back-end serverless:** um Google Apps Script (`apps-script-avaliacoes.gs`) recebe e entrega as avaliações, guardadas numa planilha Google. O dono modera pela própria planilha.
+- **Formulário protegido:** campo-isca contra robôs, bloqueio de injeção de fórmulas na planilha, validação de tamanho e formato, e trava (`LockService`) contra gravações simultâneas.
+- **Foto de perfil comprimida no navegador** (canvas → JPEG pequeno) antes do envio.
+- **Desempenho e acessibilidade:** imagens com carregamento preguiçoso, animações disparadas com `IntersectionObserver` e respeito a `prefers-reduced-motion`.
+- **Hospedagem gratuita** no GitHub Pages.
+
+**Tecnologias:** HTML5 · CSS3 · JavaScript · Google Apps Script · Google Sheets · GitHub Pages
+
 ## Estrutura
 
 ```
